@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.kingja.rxbus2.Callback;
 import com.kingja.rxbus2.RxBus;
+import com.kingja.rxbus2.Subscribe;
 
 /**
  * Description:TODO
@@ -50,17 +51,14 @@ public class FragmentB extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        RxBus.getDefault().register(this, EventB.class, new Callback<EventB>() {
-            @Override
-            public void onReceive(EventB event) {
-                ((TextView) rootView.findViewById(R.id.tv_eventMsg)).setText(event.getMsg());
-            }
-        });
-        RxBus.getDefault().register(this, EventC.class, new Callback<EventC>() {
-            @Override
-            public void onReceive(EventC event) {
-                ((TextView) rootView.findViewById(R.id.tv_eventMsg)).setText(event.getMsg());
-            }
-        });
+        RxBus.getDefault().register(this);
+    }
+    @Subscribe
+    public void receiveEventB(EventB event) {
+        ((TextView) rootView.findViewById(R.id.tv_eventMsg)).setText(event.getMsg());
+    }
+    @Subscribe
+    public void receiveEventC(EventC event) {
+        ((TextView) rootView.findViewById(R.id.tv_eventMsg)).setText(event.getMsg());
     }
 }

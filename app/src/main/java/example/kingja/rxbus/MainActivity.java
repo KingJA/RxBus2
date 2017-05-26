@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.kingja.rxbus2.Callback;
 import com.kingja.rxbus2.RxBus;
+import com.kingja.rxbus2.Subscribe;
 
 public class MainActivity extends AppCompatActivity {
     private final String TAG = getClass().getSimpleName();
@@ -24,13 +25,7 @@ public class MainActivity extends AppCompatActivity {
 
         getSupportFragmentManager().beginTransaction().add(R.id.fl_fragmentA, new FragmentA()).commit();
         getSupportFragmentManager().beginTransaction().add(R.id.fl_fragmentB, new FragmentB()).commit();
-
-        RxBus.getDefault().register(this, EventMain.class, new Callback<EventMain>() {
-            @Override
-            public void onReceive(EventMain event) {
-                ((TextView) findViewById(R.id.tv_main_eventMsg)).setText(event.getMsg());
-            }
-        });
+        RxBus.getDefault().register(this);
     }
 
     public void sendEventA(View view) {
@@ -43,6 +38,11 @@ public class MainActivity extends AppCompatActivity {
 
     public void sendEventC(View view) {
         RxBus.getDefault().post(new EventC(this));
+    }
+
+    @Subscribe
+    public void receiveEventMain(EventMain event) {
+        ((TextView) findViewById(R.id.tv_main_eventMsg)).setText(event.getMsg());
     }
 
 }
