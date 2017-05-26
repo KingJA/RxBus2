@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import io.reactivex.Scheduler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -22,16 +21,11 @@ import io.reactivex.schedulers.Schedulers;
  * Email:kingjavip@gmail.com
  */
 public class RxBus {
-
-    private final FlowableProcessor<Object> mFlowableProcessor;
     private static RxBus mRxBus;
-    private static Map<Class<?>, Map<Class<?>, Disposable>> mDisposableMap = new HashMap<>();
+    private final FlowableProcessor<Object> mFlowableProcessor;
     private final MethodFinder mMethodFinder;
+    private static Map<Class<?>, Map<Class<?>, Disposable>> mDisposableMap = new HashMap<>();
 
-    /**
-     * Wraps this Subject and serializes the calls to the onSubscribe, onNext, onError and onComplete methods, making
-     * them thread-safe.
-     */
     private RxBus() {
         mFlowableProcessor = PublishProcessor.create().toSerialized();
         mMethodFinder = new MethodFinder();
@@ -47,18 +41,16 @@ public class RxBus {
         }
         return mRxBus;
     }
-
-    public void post(Object obj) {
-        if (mFlowableProcessor.hasSubscribers()) {
-            mFlowableProcessor.onNext(obj);
-        }
-    }
-
     public void register(Object subsciber) {
         Class<?> subsciberClass = subsciber.getClass();
         List<SubscriberMethod> subscriberMethods = mMethodFinder.findMehod(subsciberClass);
         for (SubscriberMethod subscriberMethod : subscriberMethods) {
             addSubscriber(subsciber, subscriberMethod);
+        }
+    }
+    public void post(Object obj) {
+        if (mFlowableProcessor.hasSubscribers()) {
+            mFlowableProcessor.onNext(obj);
         }
     }
 
@@ -137,7 +129,7 @@ public class RxBus {
         Class<?> subscriberClass = subscriber.getClass();
         Map<Class<?>, Disposable> disposableMap = mDisposableMap.get(subscriberClass);
         if (disposableMap == null) {
-            throw new IllegalArgumentException(subscriberClass.getSimpleName() + " haven't register RxBus");
+            throw new IllegalArgumentException(subscriberClass.getSimpleName() + " haven't registered RxBus");
         }
         Set<Class<?>> keySet = disposableMap.keySet();
         for (Class<?> evenType : keySet) {

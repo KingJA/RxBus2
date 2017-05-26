@@ -1,7 +1,5 @@
 package com.kingja.rxbus2;
 
-import io.reactivex.Scheduler;
-
 /**
  * Description:TODO
  * Create Time:2017/5/26 14:47
