@@ -1,9 +1,12 @@
 package com.kingja.rxbus2;
 
 import android.content.Context;
+import android.util.Log;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import io.reactivex.Scheduler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -22,7 +25,7 @@ public class RxBus {
 
     private final FlowableProcessor<Object> mFlowableProcessor;
     private static RxBus mRxBus;
-    private static Map<String, Disposable> mDisposableMap = new HashMap<String, Disposable>();
+    private static Map<Class<?>, Map<Class<?>, Disposable>> mDisposableMap = new HashMap<>();
 
     /**
      * Wraps this Subject and serializes the calls to the onSubscribe, onNext, onError and onComplete methods, making
@@ -49,28 +52,53 @@ public class RxBus {
         }
     }
 
-    public <T> void register(Context context, Class<T> eventType, final Callback<T> callback) {
-        register(context, eventType, callback, AndroidSchedulers.mainThread());
+    public <T> void register(Object subscriber, Class<T> eventType, final Callback<T> callback) {
+        register(subscriber, eventType, callback, AndroidSchedulers.mainThread());
     }
 
-    public <T> void register(Context context, Class<T> eventType, final Callback<T> callback, Scheduler scheduler) {
-        Disposable subscribe = mFlowableProcessor.ofType(eventType).observeOn(scheduler).subscribe(new Consumer<T>() {
+    public <T> void register(Object subscriber, Class<T> eventType, final Callback<T> callback, Scheduler scheduler) {
+        Disposable disposable = mFlowableProcessor.ofType(eventType).observeOn(scheduler).subscribe(new Consumer<T>() {
             @Override
             public void accept(T t) throws Exception {
                 callback.onReceive(t);
             }
         });
-        mDisposableMap.put(context.getClass().getSimpleName(), subscribe);
-
+        Class<?> subscriberClass = subscriber.getClass();
+        Map<Class<?>, Disposable> disposableMap = mDisposableMap.get(subscriberClass);
+        if (disposableMap == null) {
+            disposableMap = new HashMap<>();
+            mDisposableMap.put(subscriberClass, disposableMap);
+        }
+        disposableMap.put(eventType, disposable);
     }
 
-    public void unRegister(Context context) {
-        String contextName = context.getClass().getSimpleName();
-        Disposable disposable = mDisposableMap.get(contextName);
-        if (disposable == null) {
-            throw new IllegalArgumentException(contextName + " haven't register RxBus");
+    public void unRegister(Object subscriber, Class<?> eventType) {
+
+        Class<?> subscriberClass = subscriber.getClass();
+        Map<Class<?>, Disposable> disposableMap = mDisposableMap.get(subscriberClass);
+        if (disposableMap == null) {
+            throw new IllegalArgumentException(subscriberClass.getSimpleName() + " haven't registered RxBus");
         }
+        if (!disposableMap.containsKey(eventType)) {
+            throw new IllegalArgumentException("The event with type of " + subscriberClass.getSimpleName() + " is not" +
+                    " required in " + subscriberClass.getSimpleName());
+        }
+        Disposable disposable = disposableMap.get(eventType);
         disposable.dispose();
-        mDisposableMap.remove(contextName);
+        mDisposableMap.remove(eventType);
+    }
+
+    public void unRegister(Object subscriber) {
+        Class<?> subscriberClass = subscriber.getClass();
+        Map<Class<?>, Disposable> disposableMap = mDisposableMap.get(subscriberClass);
+        if (disposableMap == null) {
+            throw new IllegalArgumentException(subscriberClass.getSimpleName() + " haven't register RxBus");
+        }
+        Set<Class<?>> keySet = disposableMap.keySet();
+        for (Class<?> evenType : keySet) {
+            Disposable disposable = disposableMap.get(evenType);
+            disposable.dispose();
+        }
+        mDisposableMap.remove(subscriberClass);
     }
 }

@@ -6,6 +6,11 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TextView;
+
+import com.kingja.rxbus2.Callback;
+import com.kingja.rxbus2.RxBus;
 
 /**
  * Description:TODO
@@ -14,10 +19,48 @@ import android.view.ViewGroup;
  * Email:kingjavip@gmail.com
  */
 public class FragmentB extends Fragment {
+    private final String TAG = getClass().getSimpleName();
+    private View rootView;
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_b, container, false);
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle
+            savedInstanceState) {
+        rootView = inflater.inflate(R.layout.fragment_b, container, false);
+        return rootView;
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        ((Button) rootView.findViewById(R.id.btn_sendEventA)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                RxBus.getDefault().post(new EventA(FragmentB.this));
+            }
+        });
+        ((Button) rootView.findViewById(R.id.btn_sendEventMain)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                RxBus.getDefault().post(new EventMain(FragmentB.this));
+            }
+        });
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        RxBus.getDefault().register(this, EventB.class, new Callback<EventB>() {
+            @Override
+            public void onReceive(EventB event) {
+                ((TextView) rootView.findViewById(R.id.tv_eventMsg)).setText(event.getMsg());
+            }
+        });
+        RxBus.getDefault().register(this, EventC.class, new Callback<EventC>() {
+            @Override
+            public void onReceive(EventC event) {
+                ((TextView) rootView.findViewById(R.id.tv_eventMsg)).setText(event.getMsg());
+            }
+        });
     }
 }
