@@ -20,7 +20,6 @@ import com.kingja.rxbus2.Subscribe;
  */
 public class FragmentA extends Fragment {
 
-    private final String TAG = getClass().getSimpleName();
     private View rootView;
 
     @Nullable
@@ -50,19 +49,19 @@ public class FragmentA extends Fragment {
         ((Button) rootView.findViewById(R.id.btn_unregisterEventA)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                RxBus.getDefault().unRegister(FragmentA.this, EventA.class);
+                RxBus.getDefault().unregister(FragmentA.this, EventA.class);
             }
         });
         ((Button) rootView.findViewById(R.id.btn_unregisterEventC)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                RxBus.getDefault().unRegister(FragmentA.this, EventC.class);
+                RxBus.getDefault().unregister(FragmentA.this, EventC.class);
             }
         });
         ((Button) rootView.findViewById(R.id.btn_unregisterAll)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                RxBus.getDefault().unRegister(FragmentA.this);
+                RxBus.getDefault().unregister(FragmentA.this);
             }
         });
     }

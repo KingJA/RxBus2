@@ -12,10 +12,13 @@ import io.reactivex.processors.FlowableProcessor;
 import io.reactivex.processors.PublishProcessor;
 
 /**
- * Description:TODO
- * Create Time:2017/5/25 15:12
- * Author:KingJA
- * Email:kingjavip@gmail.com
+ * RxBus2 is a central publish/subscribe event system based on RxJava2 for Android. Events are posted
+ * ({@link #post(Object)}) to subscribers that have a matching handler method for the event type. To receive events,
+ * subscribers must register themselves to the bus using {@link #register(Object)}. Once registered, subscribers
+ * receive events until {@link #unregister(Object)} is called. Event handling methods must be annotated by
+ * {@link Subscribe}, must be public, return nothing (void), and have exactly one parameter the event).
+ *
+ * @author KingJA
  */
 public class RxBus {
     private volatile static RxBus mRxBus;
@@ -40,7 +43,7 @@ public class RxBus {
     }
 
     /**
-     * Registers the given subscriber to receive events. Subscribers must call {@link #unRegister(Object)} once they
+     * Registers the given subscriber to receive events. Subscribers must call {@link #unregister(Object)} once they
      * are no longer interested in receiving events.
      * Subscribers have event handling methods that must be annotated by {@link Subscribe}.
      * The {@link Subscribe} annotation also allows configuration like {@link ThreadMode}.
@@ -75,7 +78,7 @@ public class RxBus {
     }
 
     /**
-     * call the subscriber method annotationed.
+     * call the subscriber method annotationed with receiverd event.
      */
     private void invokeMethod(Object subscriber, SubscriberMethod subscriberMethod, Object obj) {
         try {
@@ -100,7 +103,7 @@ public class RxBus {
     /**
      * Unregisters the given subscriber from all event classes.
      */
-    public void unRegister(Object subscriber) {
+    public void unregister(Object subscriber) {
         Class<?> subscriberClass = subscriber.getClass();
         Map<Class<?>, Disposable> disposableMap = mDisposableMap.get(subscriberClass);
         if (disposableMap == null) {
@@ -117,7 +120,7 @@ public class RxBus {
     /**
      * Unregisters the given subscriber of eventType from all event classes.
      */
-    public void unRegister(Object subscriber, Class<?> eventType) {
+    public void unregister(Object subscriber, Class<?> eventType) {
         Class<?> subscriberClass = subscriber.getClass();
         Map<Class<?>, Disposable> disposableMap = mDisposableMap.get(subscriberClass);
         if (disposableMap == null) {

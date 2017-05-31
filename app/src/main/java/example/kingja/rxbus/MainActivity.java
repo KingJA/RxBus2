@@ -9,15 +9,11 @@ import com.kingja.rxbus2.RxBus;
 import com.kingja.rxbus2.Subscribe;
 
 public class MainActivity extends AppCompatActivity {
-    private final String TAG = getClass().getSimpleName();
-    private TextView tv_eventMsg;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-
         getSupportFragmentManager().beginTransaction().add(R.id.fl_fragmentA, new FragmentA()).commit();
         getSupportFragmentManager().beginTransaction().add(R.id.fl_fragmentB, new FragmentB()).commit();
         RxBus.getDefault().register(this);

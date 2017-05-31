@@ -4,12 +4,7 @@ import java.lang.reflect.Method;
 
 import io.reactivex.Scheduler;
 
-/**
- * Description:TODO
- * Create Time:2017/4/13 15:28
- * Author:KingJA
- * Email:kingjavip@gmail.com
- */
+
 public class SubscriberMethod {
     public Scheduler getThreadMode() {
         return threadMode;

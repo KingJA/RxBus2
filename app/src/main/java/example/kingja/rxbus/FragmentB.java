@@ -19,7 +19,6 @@ import com.kingja.rxbus2.Subscribe;
  * Email:kingjavip@gmail.com
  */
 public class FragmentB extends Fragment {
-    private final String TAG = getClass().getSimpleName();
     private View rootView;
 
     @Nullable

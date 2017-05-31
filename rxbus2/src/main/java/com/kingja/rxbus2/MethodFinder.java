@@ -11,12 +11,7 @@ import io.reactivex.Scheduler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
-/**
- * Description:TODO
- * Create Time:2017/4/13 15:27
- * Author:KingJA
- * Email:kingjavip@gmail.com
- */
+
 public class MethodFinder {
     private static final int BRIDGE = 0x40;
     private static final int SYNTHETIC = 0x1000;
