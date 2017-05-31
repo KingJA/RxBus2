@@ -1,15 +1,10 @@
 package example.kingja.rxbus;
 
-import android.content.Intent;
-import android.os.Handler;
-import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
-import com.kingja.rxbus2.Callback;
 import com.kingja.rxbus2.RxBus;
 import com.kingja.rxbus2.Subscribe;
 

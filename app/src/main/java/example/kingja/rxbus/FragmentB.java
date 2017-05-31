@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.kingja.rxbus2.Callback;
 import com.kingja.rxbus2.RxBus;
 import com.kingja.rxbus2.Subscribe;
 

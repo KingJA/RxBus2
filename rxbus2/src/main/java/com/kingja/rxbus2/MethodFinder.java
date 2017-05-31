@@ -7,6 +7,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import io.reactivex.Scheduler;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
+
 /**
  * Description:TODO
  * Create Time:2017/4/13 15:27
@@ -25,7 +29,13 @@ public class MethodFinder {
             return subscriberMethods;
         }
         subscriberMethods = findByReflect(subscriberClass);
-        return subscriberMethods;
+        if (subscriberMethods.isEmpty()) {
+            throw new RxBusException("Subscriber " + subscriberClass
+                    + " and its super classes have no public methods with the @Subscribe annotation");
+        } else {
+            METHOD_CACHE.put(subscriberClass, subscriberMethods);
+            return subscriberMethods;
+        }
     }
 
     private List<SubscriberMethod> findByReflect(Class<?> subscriberClass) {
@@ -40,11 +50,39 @@ public class MethodFinder {
                     if (subscribeAnnotation != null) {
                         ThreadMode threadMode = subscribeAnnotation.threadMode();
                         Class<?> eventType = parameterTypes[0];
-                        subscriberMethods.add(new SubscriberMethod(method, eventType, threadMode));
+                        subscriberMethods.add(new SubscriberMethod(method, eventType, getThreadMode(threadMode)));
                     }
                 }
             }
         }
         return subscriberMethods;
+    }
+
+    private Scheduler getThreadMode(ThreadMode threadMode) {
+        Scheduler scheduler;
+        switch (threadMode) {
+            case MAIN:
+                scheduler = AndroidSchedulers.mainThread();
+                break;
+            case IO:
+                scheduler = Schedulers.io();
+                break;
+            case COMPUTATION:
+                scheduler = Schedulers.computation();
+                break;
+            case SINGLE:
+                scheduler = Schedulers.single();
+                break;
+            case TRAMPOLINE:
+                scheduler = Schedulers.trampoline();
+                break;
+            case NEW_THREAD:
+                scheduler = Schedulers.newThread();
+                break;
+            default:
+                scheduler = AndroidSchedulers.mainThread();
+                break;
+        }
+        return scheduler;
     }
 }

@@ -6,13 +6,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import io.reactivex.Scheduler;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.processors.FlowableProcessor;
 import io.reactivex.processors.PublishProcessor;
-import io.reactivex.schedulers.Schedulers;
 
 /**
  * Description:TODO
@@ -21,7 +18,7 @@ import io.reactivex.schedulers.Schedulers;
  * Email:kingjavip@gmail.com
  */
 public class RxBus {
-    private static RxBus mRxBus;
+    private volatile static RxBus mRxBus;
     private final FlowableProcessor<Object> mFlowableProcessor;
     private final MethodFinder mMethodFinder;
     private static Map<Class<?>, Map<Class<?>, Disposable>> mDisposableMap = new HashMap<>();
@@ -41,6 +38,13 @@ public class RxBus {
         }
         return mRxBus;
     }
+
+    /**
+     * Registers the given subscriber to receive events. Subscribers must call {@link #unRegister(Object)} once they
+     * are no longer interested in receiving events.
+     * Subscribers have event handling methods that must be annotated by {@link Subscribe}.
+     * The {@link Subscribe} annotation also allows configuration like {@link ThreadMode}.
+     */
     public void register(Object subsciber) {
         Class<?> subsciberClass = subsciber.getClass();
         List<SubscriberMethod> subscriberMethods = mMethodFinder.findMehod(subsciberClass);
@@ -48,22 +52,20 @@ public class RxBus {
             addSubscriber(subsciber, subscriberMethod);
         }
     }
-    public void post(Object obj) {
-        if (mFlowableProcessor.hasSubscribers()) {
-            mFlowableProcessor.onNext(obj);
-        }
-    }
 
+    /**
+     * translate the subscriberMethod to a subscriber,and put it in a cancleable container .
+     */
     private void addSubscriber(final Object subsciber, final SubscriberMethod subscriberMethod) {
         Class<?> subsciberClass = subsciber.getClass();
         Class<?> eventType = subscriberMethod.getEventType();
-        Scheduler threadMode = getThreadMode(subscriberMethod.getThreadMode());
-        Disposable disposable = mFlowableProcessor.ofType(eventType).observeOn(threadMode).subscribe(new Consumer<Object>() {
-            @Override
-            public void accept(Object o) throws Exception {
-                invokeMethod(subsciber, subscriberMethod, o);
-            }
-        });
+        Disposable disposable = mFlowableProcessor.ofType(eventType).observeOn(subscriberMethod.getThreadMode())
+                .subscribe(new Consumer<Object>() {
+                    @Override
+                    public void accept(Object o) throws Exception {
+                        invokeMethod(subsciber, subscriberMethod, o);
+                    }
+                });
         Map<Class<?>, Disposable> disposableMap = mDisposableMap.get(subsciberClass);
         if (disposableMap == null) {
             disposableMap = new HashMap<>();
@@ -72,37 +74,12 @@ public class RxBus {
         disposableMap.put(eventType, disposable);
     }
 
-    private Scheduler getThreadMode(ThreadMode threadMode) {
-        Scheduler scheduler;
-        switch (threadMode) {
-            case MAIN:
-                scheduler = AndroidSchedulers.mainThread();
-                break;
-            case IO:
-                scheduler = Schedulers.io();
-                break;
-            case COMPUTATION:
-                scheduler = Schedulers.computation();
-                break;
-            case SINGLE:
-                scheduler = Schedulers.single();
-                break;
-            case TRAMPOLINE:
-                scheduler = Schedulers.trampoline();
-                break;
-            case NEW_THREAD:
-                scheduler = Schedulers.newThread();
-                break;
-            default:
-                scheduler = AndroidSchedulers.mainThread();
-                break;
-        }
-        return scheduler;
-    }
-
-    private void invokeMethod(Object subsciber, SubscriberMethod subscriberMethod, Object obj) {
+    /**
+     * call the subscriber method annotationed.
+     */
+    private void invokeMethod(Object subscriber, SubscriberMethod subscriberMethod, Object obj) {
         try {
-            subscriberMethod.method.invoke(subsciber, obj);
+            subscriberMethod.getMethod().invoke(subscriber, obj);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (InvocationTargetException e) {
@@ -110,6 +87,36 @@ public class RxBus {
         }
     }
 
+    /**
+     * Posts the given event to the RxBus.
+     */
+    public void post(Object obj) {
+        if (mFlowableProcessor.hasSubscribers()) {
+            mFlowableProcessor.onNext(obj);
+        }
+    }
+
+
+    /**
+     * Unregisters the given subscriber from all event classes.
+     */
+    public void unRegister(Object subscriber) {
+        Class<?> subscriberClass = subscriber.getClass();
+        Map<Class<?>, Disposable> disposableMap = mDisposableMap.get(subscriberClass);
+        if (disposableMap == null) {
+            throw new IllegalArgumentException(subscriberClass.getSimpleName() + " haven't registered RxBus");
+        }
+        Set<Class<?>> keySet = disposableMap.keySet();
+        for (Class<?> evenType : keySet) {
+            Disposable disposable = disposableMap.get(evenType);
+            disposable.dispose();
+        }
+        mDisposableMap.remove(subscriberClass);
+    }
+
+    /**
+     * Unregisters the given subscriber of eventType from all event classes.
+     */
     public void unRegister(Object subscriber, Class<?> eventType) {
         Class<?> subscriberClass = subscriber.getClass();
         Map<Class<?>, Disposable> disposableMap = mDisposableMap.get(subscriberClass);
@@ -125,17 +132,4 @@ public class RxBus {
         mDisposableMap.remove(eventType);
     }
 
-    public void unRegister(Object subscriber) {
-        Class<?> subscriberClass = subscriber.getClass();
-        Map<Class<?>, Disposable> disposableMap = mDisposableMap.get(subscriberClass);
-        if (disposableMap == null) {
-            throw new IllegalArgumentException(subscriberClass.getSimpleName() + " haven't registered RxBus");
-        }
-        Set<Class<?>> keySet = disposableMap.keySet();
-        for (Class<?> evenType : keySet) {
-            Disposable disposable = disposableMap.get(evenType);
-            disposable.dispose();
-        }
-        mDisposableMap.remove(subscriberClass);
-    }
 }
