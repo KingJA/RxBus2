@@ -22,9 +22,9 @@ RxBus.getDefault().register(this);
 #### step 2: receive
 ```java
 @Subscribe
-    public void receiveEventMain(EventMain event) {
-        ((TextView) findViewById(R.id.tv_main_eventMsg)).setText(event.getMsg());
-    }
+public void receiveEventMain(EventMain event) {
+    ((TextView) findViewById(R.id.tv_main_eventMsg)).setText(event.getMsg());
+}
 ```
 #### step 3: unregister
 ```java
@@ -33,7 +33,7 @@ RxBus.getDefault().register(this);
 ```
 ## License
 
-    Copyright 2016 KingJA
+    Copyright 2017 KingJA
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
