@@ -4,7 +4,7 @@ RxJava2
 A SIMPLE library of eventbus, based on RxJava2. CLICK THE STAR if it's useful for you.
 
 ## Preview
-![](res/rxbus.gif)
+![](res/rxbus2.gif)
 
 ## Dependencies
 
