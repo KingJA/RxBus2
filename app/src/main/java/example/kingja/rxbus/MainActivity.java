@@ -36,4 +36,9 @@ public class MainActivity extends AppCompatActivity {
         ((TextView) findViewById(R.id.tv_main_eventMsg)).setText(event.getMsg());
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        RxBus.getDefault().unregister(this);
+    }
 }

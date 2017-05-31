@@ -4,36 +4,27 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import io.reactivex.Scheduler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
 
-public class MethodFinder {
+public class SubscriberMethodFinder {
     private static final int BRIDGE = 0x40;
     private static final int SYNTHETIC = 0x1000;
-    private static final Map<Class<?>, List<SubscriberMethod>> METHOD_CACHE = new ConcurrentHashMap<>();
     private static final int MODIFIERS_IGNORE = Modifier.ABSTRACT | Modifier.STATIC | BRIDGE | SYNTHETIC;
 
-    public List<SubscriberMethod> findMehod(Class<?> subscriberClass) {
-        List<SubscriberMethod> subscriberMethods = METHOD_CACHE.get(subscriberClass);
-        if (subscriberMethods != null) {
-            return subscriberMethods;
-        }
-        subscriberMethods = findByReflect(subscriberClass);
+    public List<SubscriberMethod> findSubscriberMethods(Class<?> subscriberClass) {
+        List<SubscriberMethod> subscriberMethods = findUsingReflection(subscriberClass);
         if (subscriberMethods.isEmpty()) {
             throw new RxBusException("Subscriber " + subscriberClass
                     + " and its super classes have no public methods with the @Subscribe annotation");
-        } else {
-            METHOD_CACHE.put(subscriberClass, subscriberMethods);
-            return subscriberMethods;
         }
+        return subscriberMethods;
     }
 
-    private List<SubscriberMethod> findByReflect(Class<?> subscriberClass) {
+    private List<SubscriberMethod> findUsingReflection(Class<?> subscriberClass) {
         List<SubscriberMethod> subscriberMethods = new ArrayList<>();
         Method[] methods = subscriberClass.getDeclaredMethods();
         for (Method method : methods) {

@@ -1,6 +1,19 @@
-* 发送各类事件
-* 根据事件取消订阅，根据上下文取消
-* 采用注解方式消费事件
+Usage
+---
+register
+```java
+RxBus.getDefault().register(this);
+```
 
-TODO
-* 缓存查找注解方法
+receive
+```java
+@Subscribe
+    public void receiveEventMain(EventMain event) {
+        ((TextView) findViewById(R.id.tv_main_eventMsg)).setText(event.getMsg());
+    }
+```
+unregister
+```java
+    RxBus.getDefault().unregister(this);
+    RxBus.getDefault().unregister(this,eventA);
+```

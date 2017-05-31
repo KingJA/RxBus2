@@ -23,12 +23,12 @@ import io.reactivex.processors.PublishProcessor;
 public class RxBus {
     private volatile static RxBus mRxBus;
     private final FlowableProcessor<Object> mFlowableProcessor;
-    private final MethodFinder mMethodFinder;
+    private final SubscriberMethodFinder mSubscriberMethodFinder;
     private static Map<Class<?>, Map<Class<?>, Disposable>> mDisposableMap = new HashMap<>();
 
     private RxBus() {
         mFlowableProcessor = PublishProcessor.create().toSerialized();
-        mMethodFinder = new MethodFinder();
+        mSubscriberMethodFinder = new SubscriberMethodFinder();
     }
 
     public static RxBus getDefault() {
@@ -50,7 +50,7 @@ public class RxBus {
      */
     public void register(Object subsciber) {
         Class<?> subsciberClass = subsciber.getClass();
-        List<SubscriberMethod> subscriberMethods = mMethodFinder.findMehod(subsciberClass);
+        List<SubscriberMethod> subscriberMethods = mSubscriberMethodFinder.findSubscriberMethods(subsciberClass);
         for (SubscriberMethod subscriberMethod : subscriberMethods) {
             addSubscriber(subsciber, subscriberMethod);
         }
