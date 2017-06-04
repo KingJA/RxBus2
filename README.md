@@ -20,12 +20,15 @@ compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
 RxBus.getDefault().register(this);
 ```
 
-#### step 2: receive
+#### step 2: receive&post
 ```java
+//receive
 @Subscribe
 public void receiveEventMain(EventMain event) {
     ((TextView) findViewById(R.id.tv_main_eventMsg)).setText(event.getMsg());
 }
+//post
+RxBus.getDefault().post(new EventMain());
 ```
 #### step 3: unregister
 ```java
